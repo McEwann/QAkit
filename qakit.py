@@ -5,7 +5,7 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.3.9"
+CURRENT_VERSION = "0.4"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -13,8 +13,30 @@ GREEN = "\033[92m"
 RED = "\033[91m"
 RESET = "\033[0m"
 
+def alias_exists():
+    """Check if the alias for qakit already exists in the shell configuration file."""
+    shell = os.getenv("SHELL")
+    if "bash" in shell:
+        config_file = os.path.expanduser("~/.bashrc")
+    elif "zsh" in shell:
+        config_file = os.path.expanduser("~/.zshrc")
+    else:
+        return False
+
+    try:
+        with open(config_file, "r") as f:
+            content = f.read()
+            return "alias qakit=" in content
+    except Exception as e:
+        print(f"{RED}Error checking for alias in config file: {e}{RESET}")
+        return False
+
 def create_alias():
     """Create an alias for qakit based on the current working directory."""
+    if alias_exists():
+        print(f"{RED}Alias already exists. Skipping alias creation.{RESET}")
+        return
+
     current_directory = os.getcwd()
     alias_command = f"alias qakit='python3 {current_directory}/qakit.py'"
 
@@ -339,7 +361,11 @@ def main():
             None,
         ),
         "14": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
-        "15": ("Create alias for qakit", create_alias, None)  # New option for creating an alias
+        "15": (
+            "Create alias for qakit" if not alias_exists() else "Alias already exists",
+            create_alias if not alias_exists() else None,
+            None,
+        )  # Updated alias option
     }
 
     while True:
@@ -355,8 +381,13 @@ def main():
                 color = GREEN
                 dep_status = f" (Update available: {latest_version})"
             else:
-                color = GREEN
-                dep_status = ""
+                # Alias option in red if it already exists
+                if key == "15" and alias_exists():
+                    color = RED
+                    dep_status = ""
+                else:
+                    color = GREEN
+                    dep_status = ""
             print(f"{color}{key}. {description}{dep_status}{RESET}")
 
         choice = input("Enter your choice: ").strip()
