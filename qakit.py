@@ -5,7 +5,7 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.2.9"
+CURRENT_VERSION = "0.3.1"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -89,8 +89,14 @@ def update_script():
     try:
         response = requests.get(GITHUB_REPO_URL, timeout=10)
         if response.status_code == 200:
+            updated_script = response.text
+
+            # Ensure 'import sys' is included
+            if "import sys" not in updated_script:
+                updated_script = "import sys\n" + updated_script
+
             with open(__file__, "w") as script_file:
-                script_file.write(response.text)
+                script_file.write(updated_script)
             print("Script updated successfully! Restarting...")
             
             # Restart the script
@@ -100,6 +106,7 @@ def update_script():
             print(f"Failed to fetch the latest version. HTTP Status: {response.status_code}")
     except requests.RequestException as e:
         print(f"Error updating script: {e}")
+
 
 # Functions for individual features
 def imagemagick_convert():
@@ -162,19 +169,18 @@ def list_multicast_addresses():
     run_command(command)
 
 def nwtest_multicast():
-    """Test multicast addresses and check if the channel is encrypted."""
+    """Test multicast addresses and detect if the channel is encrypted."""
     multicast_address = input("Enter the multicast address to test: ").strip()
     duration = input("Enter the duration (in seconds) to run, or leave blank to run indefinitely: ").strip()
     verbose = input("Enable verbose output? (yes/no): ").strip().lower() == "yes"
 
-    # Construct the command with the selected options
+    # Construct the command
     command_parts = ["nwtest", "-cs1", multicast_address]
     if duration:
         command_parts.extend(["-n", duration])
     if verbose:
         command_parts.append("-v")
 
-    # Join the command parts into a single string
     command = " ".join(command_parts)
     print(f"Running: {command}")
 
@@ -182,28 +188,35 @@ def nwtest_multicast():
         # Run the command and capture its real-time output
         process = subprocess.Popen(command, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        encrypted_packets = 0
         total_packets = 0
+        encrypted_packets = 0
 
         print("\n--- nwtest Output ---")
         for line in process.stdout:
-            print(line, end="")  # Display each line of output
-            if "Encrypted packet detected" in line:  # Adjust this based on nwtest's actual output
-                encrypted_packets += 1
-            if "Received packet" in line:  # Adjust for lines indicating packets
-                total_packets += 1
-        
+            print(line, end="")  # Print each line as it comes in
+
+            # Parse packet statistics
+            if "Encryp:" in line:
+                encrypted_packets = int(line.split()[1])  # Extract encrypted packet count
+            elif "PID" in line:
+                continue  # Skip table header
+            elif line.strip() and len(line.split()) >= 5:
+                try:
+                    total_packets += int(line.split()[1])  # Sum packet counts
+                except ValueError:
+                    pass
+
         process.wait()  # Wait for the process to complete
         print("\n--- End of nwtest Output ---")
-        
-        # Display encryption summary
+
+        # Display results
         print(f"\nTotal packets analyzed: {total_packets}")
         if encrypted_packets > 0:
             print(f"Encrypted packets detected: {encrypted_packets}")
             print("The channel appears to be encrypted.")
         else:
             print("No encryption detected. The channel appears to be unencrypted.")
-        
+
         if process.returncode != 0:
             print(f"nwtest exited with errors (code: {process.returncode}).")
             error_output = process.stderr.read()
@@ -213,7 +226,6 @@ def nwtest_multicast():
             
     except Exception as e:
         print(f"Error running nwtest: {e}")
-
 
 # Main menu
 def main():
