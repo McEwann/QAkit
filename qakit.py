@@ -5,7 +5,7 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.3.2"
+CURRENT_VERSION = "0.3.3"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -196,11 +196,13 @@ def nwtest_multicast():
 
         total_packets = 0
         encrypted_packets = 0
+        sequence_errors = {}
 
-        print("\n--- nwtest Output ---")
+        # Read the output from `nwtest`
         for line in process.stdout:
-            print(line, end="")  # Print the line to the console
-            
+            # Print the line to the console
+            print(line, end="")  
+
             # Parse the line for encryption details
             if "Encryp:" in line:
                 try:
@@ -212,6 +214,10 @@ def nwtest_multicast():
                     total_packets = int(line.split()[1])  # Extract total packet count
                 except ValueError:
                     total_packets = 0
+            elif "sequence error" in line:
+                # Count sequence errors by PID
+                pid = line.split()[1]
+                sequence_errors[pid] = sequence_errors.get(pid, 0) + 1
 
         process.wait()  # Wait for the process to complete
         print("\n--- End of nwtest Output ---")
@@ -224,6 +230,14 @@ def nwtest_multicast():
         else:
             print("No encryption detected. The channel appears to be unencrypted.")
 
+        # Summarize sequence errors
+        if sequence_errors:
+            print("\n--- Sequence Errors Summary ---")
+            for pid, count in sequence_errors.items():
+                print(f"PID {pid}: {count} sequence errors")
+        else:
+            print("\nNo sequence errors detected.")
+
         # Handle any errors reported by `stderr`
         error_output = process.stderr.read()
         if error_output:
@@ -233,7 +247,7 @@ def nwtest_multicast():
     except Exception as e:
         print(f"Error running nwtest: {e}")
 
-        # Display results
+        # Display results even if the process fails
         print(f"\nTotal packets analyzed: {total_packets}")
         if encrypted_packets > 0:
             print(f"Encrypted packets detected: {encrypted_packets}")
@@ -247,9 +261,6 @@ def nwtest_multicast():
             if error_output:
                 print("--- nwtest Errors ---")
                 print(error_output)
-            
-    except Exception as e:
-        print(f"Error running nwtest: {e}")
 
 # Main menu
 def main():
