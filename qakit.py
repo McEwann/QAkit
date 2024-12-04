@@ -7,6 +7,11 @@ import requests
 CURRENT_VERSION = "0.2.1"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py"
 
+# ANSI color codes
+GREEN = "\033[92m"
+RED = "\033[91m"
+RESET = "\033[0m"
+
 def display_intro():
     print(f"""
 Craig's QA Kit - Version {CURRENT_VERSION}
@@ -96,6 +101,22 @@ def imagemagick_convert():
     command = f"convert {input_file} {output_file}"
     run_command(command)
 
+def imagemagick_resize():
+    """Resize an image."""
+    input_file = input("Enter the input image file path: ").strip()
+    output_file = input("Enter the output image file path: ").strip()
+    dimensions = input("Enter the new dimensions (e.g., 800x600): ").strip()
+    command = f"convert {input_file} -resize {dimensions} {output_file}"
+    run_command(command)
+
+def imagemagick_set_transparent_background():
+    """Set an image's background to transparent."""
+    input_file = input("Enter the input image file path: ").strip()
+    output_file = input("Enter the output image file path: ").strip()
+    color_to_make_transparent = input("Enter the background color to make transparent (e.g., white): ").strip()
+    command = f"convert {input_file} -transparent {color_to_make_transparent} {output_file}"
+    run_command(command)
+
 def ffmpeg_compress_video():
     """Compress a video."""
     input_file = input("Enter the input video file path: ").strip()
@@ -103,9 +124,39 @@ def ffmpeg_compress_video():
     command = f"ffmpeg -i {input_file} -vcodec libx264 -crf 28 {output_file}"
     run_command(command)
 
+def ffmpeg_convert_video():
+    """Convert a video format."""
+    input_file = input("Enter the input video file path: ").strip()
+    output_format = input("Enter the desired output format (e.g., mp4, avi, mkv): ").strip()
+    output_file = f"{os.path.splitext(input_file)[0]}.{output_format}"
+    command = f"ffmpeg -i {input_file} {output_file}"
+    run_command(command)
+
+def ffmpeg_extract_audio():
+    """Extract audio from a video."""
+    input_file = input("Enter the input video file path: ").strip()
+    output_file = input("Enter the output audio file path (e.g., audio.mp3): ").strip()
+    command = f"ffmpeg -i {input_file} -q:a 0 -map a {output_file}"
+    run_command(command)
+
+def ffmpeg_set_green_background():
+    """Set a video's background to green for chroma keying."""
+    input_file = input("Enter the input video file path: ").strip()
+    output_file = input("Enter the output video file path: ").strip()
+    color_to_replace = input("Enter the color to replace (e.g., black): ").strip().lower()
+    command = f"ffmpeg -i {input_file} -vf chromakey={color_to_replace}:similarity=0.2:blend=0.0,format=yuv420p {output_file}"
+    run_command(command)
+
 def list_multicast_addresses():
     """List visible multicast addresses."""
     command = "ip maddr show"
+    run_command(command)
+
+def nwtest_multicast():
+    """Test multicast addresses using nwtest."""
+    multicast_address = input("Enter the multicast address to test: ").strip()
+    port = input("Enter the port number: ").strip()
+    command = f"nwtest -m {multicast_address} -p {port}"
     run_command(command)
 
 # Main menu
@@ -118,45 +169,40 @@ def main():
     # Define menu options
     options = {
         "1": ("Convert an image using ImageMagick", imagemagick_convert, "ImageMagick (convert)"),
-        "2": ("Compress a video using FFmpeg", ffmpeg_compress_video, "FFmpeg (ffmpeg)"),
-        "3": ("List visible multicast addresses", list_multicast_addresses, "NWTest (nwtest)"),
-        "4": ("Check for updates", check_for_updates, None),
-        "5": ("Update script", update_script, None),
-        "6": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
+        "2": ("Resize an image using ImageMagick", imagemagick_resize, "ImageMagick (convert)"),
+        "3": ("Set an image's background to transparent using ImageMagick", imagemagick_set_transparent_background, "ImageMagick (convert)"),
+        "4": ("Compress a video using FFmpeg", ffmpeg_compress_video, "FFmpeg (ffmpeg)"),
+        "5": ("Convert a video format using FFmpeg", ffmpeg_convert_video, "FFmpeg (ffmpeg)"),
+        "6": ("Extract audio from a video using FFmpeg", ffmpeg_extract_audio, "FFmpeg (ffmpeg)"),
+        "7": ("Set a video's background to green using FFmpeg", ffmpeg_set_green_background, "FFmpeg (ffmpeg)"),
+        "8": ("List visible multicast addresses", list_multicast_addresses, None),
+        "9": ("Test a multicast address with NWTest", nwtest_multicast, "NWTest (nwtest)"),
+        "10": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
     }
 
     while True:
         print("\nQA Toolkit - Choose an option:")
         for key, (description, _, dependency) in options.items():
-            dep_status = ""
             if dependency and not dependencies[dependency]:
+                color = RED
                 dep_status = " (Dependencies not met)"
-            print(f"{key}. {description}{dep_status}")
+            else:
+                color = GREEN
+                dep_status = ""
+            print(f"{color}{key}. {description}{dep_status}{RESET}")
 
         choice = input("Enter your choice: ").strip()
 
         if choice in options:
             description, action, dependency = options[choice]
             if dependency and not dependencies[dependency]:
-                print(f"Cannot execute '{description}': Dependencies not met.")
+                print(f"{RED}Cannot execute '{description}': Dependencies not met.{RESET}")
                 continue
-            if choice == "4":
-                # Check for updates
-                if check_for_updates():
-                    print("Run the 'Update script' option to update.")
-            elif choice == "5":
-                # Update script
-                update_script()
+            action()
+            if choice == "10":
                 break
-            elif choice == "6":
-                # Exit
-                action()
-                break
-            else:
-                # Run the selected action
-                action()
         else:
-            print("Invalid choice. Please try again.")
+            print(f"{RED}Invalid choice. Please try again.{RESET}")
 
 if __name__ == "__main__":
     main()
