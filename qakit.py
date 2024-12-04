@@ -185,29 +185,53 @@ def nwtest_multicast():
     print(f"Running: {command}")
 
     try:
-        # Run the command and capture its real-time output
-        process = subprocess.Popen(command, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
+        # Run the command and capture output
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
         total_packets = 0
         encrypted_packets = 0
 
         print("\n--- nwtest Output ---")
         for line in process.stdout:
-            print(line, end="")  # Print each line as it comes in
-
-            # Parse packet statistics
+            print(line, end="")  # Print the line to the console
+            
+            # Parse the line for encryption details
             if "Encryp:" in line:
-                encrypted_packets = int(line.split()[1])  # Extract encrypted packet count
-            elif "PID" in line:
-                continue  # Skip table header
-            elif line.strip() and len(line.split()) >= 5:
                 try:
-                    total_packets += int(line.split()[1])  # Sum packet counts
+                    encrypted_packets = int(line.split()[1])  # Extract encrypted packet count
                 except ValueError:
-                    pass
+                    encrypted_packets = 0
+            elif "Total:" in line:
+                try:
+                    total_packets = int(line.split()[1])  # Extract total packet count
+                except ValueError:
+                    total_packets = 0
 
         process.wait()  # Wait for the process to complete
         print("\n--- End of nwtest Output ---")
+
+        # Display results
+        print(f"\nTotal packets analyzed: {total_packets}")
+        if encrypted_packets > 0:
+            print(f"Encrypted packets detected: {encrypted_packets}")
+            print("The channel appears to be encrypted.")
+        else:
+            print("No encryption detected. The channel appears to be unencrypted.")
+
+        # Handle any errors reported by `stderr`
+        error_output = process.stderr.read()
+        if error_output:
+            print("\n--- nwtest Errors ---")
+            print(error_output)
+
+    except Exception as e:
+        print(f"Error running nwtest: {e}")
 
         # Display results
         print(f"\nTotal packets analyzed: {total_packets}")
