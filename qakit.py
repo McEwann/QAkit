@@ -4,7 +4,7 @@ import subprocess
 import requests
 
 # Define the current version
-CURRENT_VERSION = "0.2.5"
+CURRENT_VERSION = "0.2.6"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -83,14 +83,18 @@ def check_for_updates():
     return False, CURRENT_VERSION
 
 def update_script():
-    """Update the script to the latest version from GitHub."""
+    """Update the script to the latest version from GitHub and restart."""
     print("Updating script...")
     try:
         response = requests.get(GITHUB_REPO_URL, timeout=10)
         if response.status_code == 200:
             with open(__file__, "w") as script_file:
                 script_file.write(response.text)
-            print("Script updated successfully! Please restart it to apply changes.")
+            print("Script updated successfully! Restarting...")
+            
+            # Restart the script
+            python_executable = sys.executable  # Get the Python interpreter used to run the script
+            os.execv(python_executable, [python_executable] + sys.argv)
         else:
             print(f"Failed to fetch the latest version. HTTP Status: {response.status_code}")
     except requests.RequestException as e:
