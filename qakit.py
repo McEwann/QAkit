@@ -84,19 +84,28 @@ def check_for_updates():
     return False, CURRENT_VERSION
 
 def update_script():
-    """Update the script to the latest version from GitHub and restart.""" 
+    """Update the script to the latest version from GitHub and restart."""
     print("Updating script...")
     try:
         response = requests.get(GITHUB_REPO_URL, timeout=10)
         if response.status_code == 200:
             updated_script = response.text
 
-            # Ensure 'import sys' is included
+            # Ensure 'import sys' is included (or any necessary checks)
             if "import sys" not in updated_script:
                 updated_script = "import sys\n" + updated_script
 
+            # Only update the version part or specific parts that need updating
+            updated_script_lines = updated_script.splitlines()
+
+            # Check for lines that should be updated (like version information)
+            for idx, line in enumerate(updated_script_lines):
+                if line.startswith("CURRENT_VERSION"):
+                    updated_script_lines[idx] = f'CURRENT_VERSION = "{CURRENT_VERSION}"'  # Preserve the current version
+
+            # Now write back only specific changes
             with open(__file__, "w") as script_file:
-                script_file.write(updated_script)
+                script_file.write("\n".join(updated_script_lines))
             print("Script updated successfully! Restarting...")
 
             # Restart the script
