@@ -4,7 +4,7 @@ import subprocess
 import requests
 
 # Define the current version
-CURRENT_VERSION = "0.2.4"
+CURRENT_VERSION = "0.2.5"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -159,8 +159,27 @@ def list_multicast_addresses():
 def nwtest_multicast():
     """Test multicast addresses using nwtest."""
     multicast_address = input("Enter the multicast address to test: ").strip()
-    command = f"nwtest -cs1 {multicast_address}"
-    run_command(command)
+    duration = input("Enter the duration (in seconds) to run, or leave blank to run indefinitely: ").strip()
+    duration_option = f"-n {duration}" if duration else ""
+    
+    command = f"nwtest -cs1 {multicast_address} {duration_option}"
+    print(f"Running: {command}")
+    
+    try:
+        process = subprocess.Popen(command, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        for line in process.stdout:
+            print(line, end="")
+        
+        process.wait()
+        if process.returncode == 0:
+            print("nwtest completed successfully!")
+        else:
+            print(f"nwtest exited with errors (code: {process.returncode}).")
+            print(process.stderr.read())
+            
+    except Exception as e:
+        print(f"Error running nwtest: {e}")
 
 # Main menu
 def main():
