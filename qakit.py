@@ -157,29 +157,43 @@ def list_multicast_addresses():
     run_command(command)
 
 def nwtest_multicast():
-    """Test multicast addresses using nwtest."""
+    """Test multicast addresses using nwtest with detailed output."""
     multicast_address = input("Enter the multicast address to test: ").strip()
     duration = input("Enter the duration (in seconds) to run, or leave blank to run indefinitely: ").strip()
+    verbose = input("Enable verbose output? (yes/no): ").strip().lower() == "yes"
+    detailed_encryption_check = input("Enable detailed packet/encryption analysis? (yes/no): ").strip().lower() == "yes"
+
     duration_option = f"-n {duration}" if duration else ""
-    
-    command = f"nwtest -cs1 {multicast_address} {duration_option}"
+    verbose_option = "-v" if verbose else ""
+    encryption_option = "-C UTF-8" if detailed_encryption_check else ""  # Adjust to the correct flag for encryption analysis
+
+    # Construct the command
+    command = f"nwtest -cs1 {multicast_address} {duration_option} {verbose_option} {encryption_option}".strip()
     print(f"Running: {command}")
-    
+
     try:
+        # Run the command and capture its real-time output
         process = subprocess.Popen(command, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
+        print("\n--- nwtest Output ---")
         for line in process.stdout:
-            print(line, end="")
+            print(line, end="")  # Display each line of output
         
-        process.wait()
+        process.wait()  # Wait for the process to complete
+        print("\n--- End of nwtest Output ---")
+        
         if process.returncode == 0:
             print("nwtest completed successfully!")
         else:
             print(f"nwtest exited with errors (code: {process.returncode}).")
-            print(process.stderr.read())
+            error_output = process.stderr.read()
+            if error_output:
+                print("--- nwtest Errors ---")
+                print(error_output)
             
     except Exception as e:
         print(f"Error running nwtest: {e}")
+
 
 # Main menu
 def main():
