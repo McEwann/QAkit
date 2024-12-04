@@ -5,7 +5,7 @@ import requests
 
 # Define the current version
 CURRENT_VERSION = "0.2.1"
-GITHUB_REPO_URL = "hhttps://raw.githubusercontent.com/McEwann/QAkit/refs/heads/main/qakit.py"
+GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py"
 
 def display_intro():
     print(f"""
