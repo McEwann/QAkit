@@ -5,7 +5,7 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.2.8"
+CURRENT_VERSION = "0.2.9"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -162,34 +162,49 @@ def list_multicast_addresses():
     run_command(command)
 
 def nwtest_multicast():
-    """Test multicast addresses using nwtest with detailed output."""
+    """Test multicast addresses and check if the channel is encrypted."""
     multicast_address = input("Enter the multicast address to test: ").strip()
     duration = input("Enter the duration (in seconds) to run, or leave blank to run indefinitely: ").strip()
     verbose = input("Enable verbose output? (yes/no): ").strip().lower() == "yes"
-    detailed_encryption_check = input("Enable detailed packet/encryption analysis? (yes/no): ").strip().lower() == "yes"
 
-    duration_option = f"-n {duration}" if duration else ""
-    verbose_option = "-v" if verbose else ""
-    encryption_option = "-C UTF-8" if detailed_encryption_check else ""  # Adjust to the correct flag for encryption analysis
+    # Construct the command with the selected options
+    command_parts = ["nwtest", "-cs1", multicast_address]
+    if duration:
+        command_parts.extend(["-n", duration])
+    if verbose:
+        command_parts.append("-v")
 
-    # Construct the command
-    command = f"nwtest -cs1 {multicast_address} {duration_option} {verbose_option} {encryption_option}".strip()
+    # Join the command parts into a single string
+    command = " ".join(command_parts)
     print(f"Running: {command}")
 
     try:
         # Run the command and capture its real-time output
         process = subprocess.Popen(command, shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
+        encrypted_packets = 0
+        total_packets = 0
+
         print("\n--- nwtest Output ---")
         for line in process.stdout:
             print(line, end="")  # Display each line of output
+            if "Encrypted packet detected" in line:  # Adjust this based on nwtest's actual output
+                encrypted_packets += 1
+            if "Received packet" in line:  # Adjust for lines indicating packets
+                total_packets += 1
         
         process.wait()  # Wait for the process to complete
         print("\n--- End of nwtest Output ---")
         
-        if process.returncode == 0:
-            print("nwtest completed successfully!")
+        # Display encryption summary
+        print(f"\nTotal packets analyzed: {total_packets}")
+        if encrypted_packets > 0:
+            print(f"Encrypted packets detected: {encrypted_packets}")
+            print("The channel appears to be encrypted.")
         else:
+            print("No encryption detected. The channel appears to be unencrypted.")
+        
+        if process.returncode != 0:
             print(f"nwtest exited with errors (code: {process.returncode}).")
             error_output = process.stderr.read()
             if error_output:
