@@ -4,8 +4,8 @@ import subprocess
 import requests
 
 # Define the current version
-CURRENT_VERSION = "0.2"
-GITHUB_REPO_URL = "https://raw.githubusercontent.com/<username>/<repository>/main/craigs_qa_kit.py"  # Update with your GitHub repo URL
+CURRENT_VERSION = "0.2.1"
+GITHUB_REPO_URL = "hhttps://raw.githubusercontent.com/McEwann/QAkit/refs/heads/main/qakit.py"
 
 def display_intro():
     print(f"""
