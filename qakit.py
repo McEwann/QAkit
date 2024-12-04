@@ -5,13 +5,36 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.3.8"
+CURRENT_VERSION = "0.3.9"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
 GREEN = "\033[92m"
 RED = "\033[91m"
 RESET = "\033[0m"
+
+def create_alias():
+    """Create an alias for qakit based on the current working directory."""
+    current_directory = os.getcwd()
+    alias_command = f"alias qakit='python3 {current_directory}/qakit.py'"
+
+    # Check if we're using bash or zsh and append alias to the correct file
+    shell = os.getenv("SHELL")
+    if "bash" in shell:
+        config_file = os.path.expanduser("~/.bashrc")
+    elif "zsh" in shell:
+        config_file = os.path.expanduser("~/.zshrc")
+    else:
+        print(f"{RED}Unsupported shell: {shell}. Alias not created.{RESET}")
+        return
+
+    try:
+        # Append the alias command to the config file
+        with open(config_file, "a") as f:
+            f.write(f"\n{alias_command}\n")
+        print(f"{GREEN}Alias created successfully! To use it, please restart your shell or run 'source {config_file}'.{RESET}")
+    except Exception as e:
+        print(f"{RED}Error creating alias: {e}{RESET}")
 
 def display_intro():
     print(f"""
@@ -316,6 +339,7 @@ def main():
             None,
         ),
         "14": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
+        "15": ("Create alias for qakit", create_alias, None)  # New option for creating an alias
     }
 
     while True:
