@@ -220,7 +220,11 @@ def main():
         "7": ("Set a video's background to green using FFmpeg", ffmpeg_set_green_background, "FFmpeg (ffmpeg)"),
         "8": ("List visible multicast addresses", list_multicast_addresses, None),
         "9": ("Test a multicast address with NWTest", nwtest_multicast, "NWTest (nwtest)"),
-        "10": ("Update script" if update_available else "No updates available", update_script if update_available else None, None),
+        "10": (
+            "Update script" if update_available else "No updates available",
+            update_script if update_available else None,
+            None,
+        ),
         "11": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
     }
 
@@ -230,6 +234,9 @@ def main():
             if dependency and not dependencies[dependency]:
                 color = RED
                 dep_status = " (Dependencies not met)"
+            elif key == "10" and not update_available:
+                color = RED
+                dep_status = ""
             elif key == "10" and update_available:
                 color = GREEN
                 dep_status = f" (Update available: {latest_version})"
@@ -251,6 +258,5 @@ def main():
                 break
         else:
             print(f"{RED}Invalid choice. Please try again.{RESET}")
-
 if __name__ == "__main__":
     main()
