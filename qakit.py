@@ -2,9 +2,10 @@
 import os
 import subprocess
 import requests
+import sys
 
 # Define the current version
-CURRENT_VERSION = "0.2.7"
+CURRENT_VERSION = "0.2.8"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
