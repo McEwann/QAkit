@@ -4,7 +4,7 @@ import subprocess
 import requests
 
 # Define the current version
-CURRENT_VERSION = "0.2.3"
+CURRENT_VERSION = "0.2.4"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -159,8 +159,7 @@ def list_multicast_addresses():
 def nwtest_multicast():
     """Test multicast addresses using nwtest."""
     multicast_address = input("Enter the multicast address to test: ").strip()
-    port = input("Enter the port number: ").strip()
-    command = f"nwtest -m {multicast_address} -p {port}"
+    command = f"nwtest -cs1 {multicast_address}"
     run_command(command)
 
 # Main menu
