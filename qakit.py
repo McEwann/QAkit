@@ -4,8 +4,8 @@ import subprocess
 import requests
 
 # Define the current version
-CURRENT_VERSION = "0.2.2"
-GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py"
+CURRENT_VERSION = "0.2.3"
+GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
 GREEN = "\033[92m"
@@ -59,6 +59,10 @@ def check_dependencies():
         "NWTest (nwtest)": is_tool_installed("nwtest"),
     }
 
+def version_tuple(version):
+    """Convert version string to tuple for comparison."""
+    return tuple(map(int, version.split(".")))
+
 def check_for_updates():
     """Check if a new version of the script is available on GitHub."""
     print("Checking for updates...")
@@ -68,15 +72,15 @@ def check_for_updates():
             for line in response.text.splitlines():
                 if "CURRENT_VERSION" in line:
                     latest_version = line.split('"')[1]
-                    if latest_version > CURRENT_VERSION:
+                    if version_tuple(latest_version) > version_tuple(CURRENT_VERSION):
                         print(f"A newer version ({latest_version}) is available!")
-                        return True
+                        return True, latest_version
                     else:
                         print("You are using the latest version.")
-                        return False
+                        return False, CURRENT_VERSION
     except requests.RequestException as e:
         print(f"Error checking for updates: {e}")
-    return False
+    return False, CURRENT_VERSION
 
 def update_script():
     """Update the script to the latest version from GitHub."""
@@ -166,6 +170,9 @@ def main():
     # Check dependencies
     dependencies = check_dependencies()
 
+    # Check for updates
+    update_available, latest_version = check_for_updates()
+
     # Define menu options
     options = {
         "1": ("Convert an image using ImageMagick", imagemagick_convert, "ImageMagick (convert)"),
@@ -177,15 +184,19 @@ def main():
         "7": ("Set a video's background to green using FFmpeg", ffmpeg_set_green_background, "FFmpeg (ffmpeg)"),
         "8": ("List visible multicast addresses", list_multicast_addresses, None),
         "9": ("Test a multicast address with NWTest", nwtest_multicast, "NWTest (nwtest)"),
-        "10": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
+        "10": ("Update script" if update_available else "No updates available", update_script if update_available else None, None),
+        "11": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
     }
 
     while True:
         print("\nQA Toolkit - Choose an option:")
-        for key, (description, _, dependency) in options.items():
+        for key, (description, action, dependency) in options.items():
             if dependency and not dependencies[dependency]:
                 color = RED
                 dep_status = " (Dependencies not met)"
+            elif key == "10" and update_available:
+                color = GREEN
+                dep_status = f" (Update available: {latest_version})"
             else:
                 color = GREEN
                 dep_status = ""
@@ -198,8 +209,9 @@ def main():
             if dependency and not dependencies[dependency]:
                 print(f"{RED}Cannot execute '{description}': Dependencies not met.{RESET}")
                 continue
-            action()
-            if choice == "10":
+            if action:
+                action()
+            if choice == "11":
                 break
         else:
             print(f"{RED}Invalid choice. Please try again.{RESET}")
