@@ -125,6 +125,14 @@ def imagemagick_resize():
     command = f"convert {input_file} -resize {dimensions} {output_file}"
     run_command(command)
 
+def imagemagick_rotate():
+    """Rotate an image."""
+    input_file = input("Enter the input image file path: ").strip()
+    output_file = input("Enter the output image file path: ").strip()
+    angle = input("Enter the angle to rotate (e.g., 90, 180): ").strip()
+    command = f"convert {input_file} -rotate {angle} {output_file}"
+    run_command(command)
+
 def imagemagick_set_transparent_background():
     """Set an image's background to transparent."""
     input_file = input("Enter the input image file path: ").strip()
@@ -148,6 +156,14 @@ def ffmpeg_convert_video():
     command = f"ffmpeg -i {input_file} {output_file}"
     run_command(command)
 
+def ffmpeg_resize_video():
+    """Resize a video."""
+    input_file = input("Enter the input video file path: ").strip()
+    output_file = input("Enter the output video file path: ").strip()
+    dimensions = input("Enter the new dimensions (e.g., 1280x720): ").strip()
+    command = f"ffmpeg -i {input_file} -vf scale={dimensions} {output_file}"
+    run_command(command)
+
 def ffmpeg_extract_audio():
     """Extract audio from a video."""
     input_file = input("Enter the input video file path: ").strip()
@@ -164,9 +180,19 @@ def ffmpeg_set_green_background():
     run_command(command)
 
 def list_multicast_addresses():
-    """List visible multicast addresses."""
-    command = "ip maddr show"
-    run_command(command)
+    """List multicast addresses from the default network interface, only showing inet (IPv4) addresses."""
+    try:
+        # Get the default network interface
+        result = subprocess.run("ip route | grep default", shell=True, text=True, capture_output=True)
+        if result.returncode == 0:
+            default_interface = result.stdout.split()[4]
+            # List multicast addresses on the default interface and filter to only show 'inet' (IPv4)
+            command = f"ip maddr show {default_interface} | grep inet"
+            run_command(command)
+        else:
+            print(f"{RED}Failed to determine default interface.{RESET}")
+    except Exception as e:
+        print(f"{RED}Error getting multicast addresses: {e}{RESET}")
 
 def nwtest_multicast():
     """Test multicast addresses and detect if the channel is encrypted."""
@@ -247,20 +273,18 @@ def nwtest_multicast():
     except Exception as e:
         print(f"Error running nwtest: {e}")
 
-        # Display results even if the process fails
-        print(f"\nTotal packets analyzed: {total_packets}")
-        if encrypted_packets > 0:
-            print(f"Encrypted packets detected: {encrypted_packets}")
-            print("The channel appears to be encrypted.")
-        else:
-            print("No encryption detected. The channel appears to be unencrypted.")
+def check_connection():
+    """Ping a target IP or domain."""
+    target = input("Enter the IP address or domain to ping: ").strip()
+    command = f"ping -c 4 {target}"
+    run_command(command)
 
-        if process.returncode != 0:
-            print(f"nwtest exited with errors (code: {process.returncode}).")
-            error_output = process.stderr.read()
-            if error_output:
-                print("--- nwtest Errors ---")
-                print(error_output)
+def download_file():
+    """Download a file from a URL."""
+    url = input("Enter the URL to download: ").strip()
+    output_file = input("Enter the file path to save as: ").strip()
+    command = f"wget -O {output_file} {url}"
+    run_command(command)
 
 # Main menu
 def main():
@@ -276,19 +300,22 @@ def main():
     options = {
         "1": ("Convert an image using ImageMagick", imagemagick_convert, "ImageMagick (convert)"),
         "2": ("Resize an image using ImageMagick", imagemagick_resize, "ImageMagick (convert)"),
-        "3": ("Set an image's background to transparent using ImageMagick", imagemagick_set_transparent_background, "ImageMagick (convert)"),
+        "3": ("Rotate an image using ImageMagick", imagemagick_rotate, "ImageMagick (convert)"),
         "4": ("Compress a video using FFmpeg", ffmpeg_compress_video, "FFmpeg (ffmpeg)"),
         "5": ("Convert a video format using FFmpeg", ffmpeg_convert_video, "FFmpeg (ffmpeg)"),
-        "6": ("Extract audio from a video using FFmpeg", ffmpeg_extract_audio, "FFmpeg (ffmpeg)"),
-        "7": ("Set a video's background to green using FFmpeg", ffmpeg_set_green_background, "FFmpeg (ffmpeg)"),
-        "8": ("List visible multicast addresses", list_multicast_addresses, None),
-        "9": ("Test a multicast address with NWTest", nwtest_multicast, "NWTest (nwtest)"),
-        "10": (
+        "6": ("Resize a video using FFmpeg", ffmpeg_resize_video, "FFmpeg (ffmpeg)"),
+        "7": ("Extract audio from a video using FFmpeg", ffmpeg_extract_audio, "FFmpeg (ffmpeg)"),
+        "8": ("Set a video's background to green using FFmpeg", ffmpeg_set_green_background, "FFmpeg (ffmpeg)"),
+        "9": ("List multicast addresses from the default interface", list_multicast_addresses, None),
+        "10": ("Test a multicast address with NWTest", nwtest_multicast, "NWTest (nwtest)"),
+        "11": ("Ping a specific IP or domain", check_connection, None),
+        "12": ("Download a file from a URL", download_file, None),
+        "13": (
             "Update script" if update_available else "No updates available",
             update_script if update_available else None,
             None,
         ),
-        "11": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
+        "14": ("Exit", lambda: print("Exiting QA Toolkit. Goodbye!"), None),
     }
 
     while True:
@@ -297,10 +324,10 @@ def main():
             if dependency and not dependencies[dependency]:
                 color = RED
                 dep_status = " (Dependencies not met)"
-            elif key == "10" and not update_available:
+            elif key == "13" and not update_available:
                 color = RED
                 dep_status = ""
-            elif key == "10" and update_available:
+            elif key == "13" and update_available:
                 color = GREEN
                 dep_status = f" (Update available: {latest_version})"
             else:
@@ -317,10 +344,10 @@ def main():
                 continue
             if action:
                 action()
-            if choice == "11":
+            if choice == "14":
                 break
         else:
             print(f"{RED}Invalid choice. Please try again.{RESET}")
+
 if __name__ == "__main__":
     main()
-
