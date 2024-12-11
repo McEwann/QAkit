@@ -5,7 +5,7 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.4"
+CURRENT_VERSION = "0.5"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -75,7 +75,13 @@ Always ensure thorough and appropriate testing for your use case.
 def run_command(command):
     """Runs a shell command and prints its output."""
     try:
-        result = subprocess.run(command, shell=True, text=True, capture_output=True)
+        result = subprocess.run(
+            command,
+            shell=True,
+            text=True,
+            capture_output=True,
+            env={**os.environ, "LD_LIBRARY_PATH": "/usr/local/triplecms/lib"}
+        )
         if result.stdout:
             print(result.stdout)
         if result.stderr:
@@ -190,7 +196,7 @@ def ffmpeg_compress_video():
     """Compress a video."""
     input_file = input("Enter the input video file path: ").strip()
     output_file = input("Enter the output video file path: ").strip()
-    command = f"ffmpeg -i {input_file} -vcodec libx264 -crf 28 {output_file}"
+    command = f"/usr/local/triplecms/bin/ffmpeg -i {input_file} -vcodec libx264 -crf 28 {output_file}"
     run_command(command)
 
 def ffmpeg_convert_video():
@@ -198,7 +204,7 @@ def ffmpeg_convert_video():
     input_file = input("Enter the input video file path: ").strip()
     output_format = input("Enter the desired output format (e.g., mp4, avi, mkv): ").strip()
     output_file = f"{os.path.splitext(input_file)[0]}.{output_format}"
-    command = f"ffmpeg -i {input_file} {output_file}"
+    command = f"/usr/local/triplecms/bin/ffmpeg -i {input_file} {output_file}"
     run_command(command)
 
 def ffmpeg_resize_video():
@@ -206,14 +212,14 @@ def ffmpeg_resize_video():
     input_file = input("Enter the input video file path: ").strip()
     output_file = input("Enter the output video file path: ").strip()
     dimensions = input("Enter the new dimensions (e.g., 1280x720): ").strip()
-    command = f"ffmpeg -i {input_file} -vf scale={dimensions} {output_file}"
+    command = f"/usr/local/triplecms/bin/ffmpeg -i {input_file} -vf scale={dimensions} {output_file}"
     run_command(command)
 
 def ffmpeg_extract_audio():
     """Extract audio from a video."""
     input_file = input("Enter the input video file path: ").strip()
     output_file = input("Enter the output audio file path (e.g., audio.mp3): ").strip()
-    command = f"ffmpeg -i {input_file} -q:a 0 -map a {output_file}"
+    command = f"/usr/local/triplecms/bin/ffmpeg -i {input_file} -q:a 0 -map a {output_file}"
     run_command(command)
 
 def ffmpeg_set_green_background():
@@ -221,7 +227,7 @@ def ffmpeg_set_green_background():
     input_file = input("Enter the input video file path: ").strip()
     output_file = input("Enter the output video file path: ").strip()
     color_to_replace = input("Enter the color to replace (e.g., black): ").strip().lower()
-    command = f"ffmpeg -i {input_file} -vf chromakey={color_to_replace}:similarity=0.2:blend=0.0,format=yuv420p {output_file}"
+    command = f"/usr/local/triplecms/bin/ffmpeg -i {input_file} -vf chromakey={color_to_replace}:similarity=0.2:blend=0.0,format=yuv420p {output_file}"
     run_command(command)
 
 def list_multicast_addresses():
