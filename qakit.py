@@ -5,7 +5,7 @@ import requests
 import sys
 
 # Define the current version
-CURRENT_VERSION = "0.5"
+CURRENT_VERSION = "0.5.1"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes
@@ -98,7 +98,9 @@ def run_command(command):
 def is_tool_installed(tool):
     """Check if a specific tool is installed on the system."""
     try:
-        subprocess.run([tool, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run([tool, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env={
+            **os.environ, "LD_LIBRARY_PATH": "/usr/local/triplecms/lib"
+        })
         return True
     except FileNotFoundError:
         return False
@@ -107,7 +109,7 @@ def check_dependencies():
     """Check for required tools and their availability."""
     return {
         "ImageMagick (convert)": is_tool_installed("convert"),
-        "FFmpeg (ffmpeg)": is_tool_installed("ffmpeg"),
+        "FFmpeg (ffmpeg)": is_tool_installed("/usr/local/triplecms/bin/ffmpeg"),
         "NWTest (nwtest)": is_tool_installed("nwtest"),
     }
 
