@@ -55,7 +55,8 @@ def create_alias():
 
     try:
         with open(config_file, "a") as f:
-            f.write(f"\n{alias_command}\n")
+         f.write(f"\n{alias_command}\n")
+
         print(f"{GREEN}Alias created successfully! To use it, please restart your shell or run 'source {config_file}'.{RESET}")
     except Exception as e:
         print(f"{RED}Error creating alias: {e}{RESET}")
@@ -262,10 +263,13 @@ def update_script():
         response = requests.get(GITHUB_REPO_URL, timeout=10)
         if response.status_code == 200:
             updated_script = response.text
-            with open(__file__, "w") as script_file:
-                script_file.write(updated_script)
-            print(f"{GREEN}Script updated successfully! Please restart.{RESET}")
-            sys.exit()
+            try:
+                with open(__file__, "w") as script_file:
+                    script_file.write(updated_script)
+                print(f"{GREEN}Script updated successfully! Please restart.{RESET}")
+                sys.exit()
+            except PermissionError:
+                print(f"{RED}Permission denied. Please run the script with sudo privileges to update.{RESET}")
         else:
             print(f"{RED}Failed to fetch the update. HTTP Status: {response.status_code}{RESET}")
     except Exception as e:
@@ -277,6 +281,6 @@ if __name__ == "__main__":
         display_dependencies()
         main_menu()
     except KeyboardInterrupt:
-        print(f"\n{RED}Program interrupted by user..{RESET}")
+        print(f"{RED}Program interrupted by user..{RESET}")
         sys.exit(0)
 
