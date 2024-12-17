@@ -6,7 +6,7 @@ import sys
 import platform
 
 # Define the current version
-CURRENT_VERSION = "1.0"
+CURRENT_VERSION = "1.0.1"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes (conditionally enabled)
