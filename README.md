@@ -1,45 +1,69 @@
-Craig's QA Kit
-Craig's QA Kit is a comprehensive toolkit designed to streamline test preparation and execution for QA engineers. Originally developed to reduce the time spent setting up specific test cases at work, this kit has grown into a collection of useful command-line tools that benefit both novice and experienced testers.
+# Craig's QA Kit
 
-Overview
-Why This Kit?
-In many testing scenarios—like when running NWTest on multicast addresses—testers previously had to manually search for, copy, and remember addresses before running their tests. With Craig's QA Kit, you can automatically scan for multicast addresses and feed them directly into NWTest, eliminating manual steps and reducing errors. This is just one example of how the kit saves time and simplifies repetitive tasks across hundreds of tests.
+**Craig's QA Kit** is a collection of command-line utilities designed to streamline and expedite testing workflows for QA engineers. Originally created to reduce the time spent preparing specific test cases at work, this kit has grown into a versatile toolkit packed with useful features for both new and experienced testers.
 
-Key Features
-Automated Test Preparation:
-Reduce setup time by automating common test preparations with a suite of built-in utilities.
+---
 
-NWTest Multicast Automation:
-Quickly scan for multicast addresses and integrate them seamlessly with NWTest—no more manual copying or command memorization.
+## Overview
 
-Alias Creation:
-Easily create an alias to run the kit from any directory, making it readily accessible.
+Traditionally, when working with multicast addresses for NWTest, testers had to:
 
-Stress Testing Tools:
-Run CPU, memory, and I/O stress tests with simple, guided commands to evaluate system performance under load.
+- **Manually search for the multicast address**  
+- **Copy or memorize the address**  
+- **Construct and run the NWTest command with the correct arguments**  
 
-Dependency Checks:
-Built-in functions verify that required tools (such as ImageMagick, FFmpeg, NWTest, stress, and stress-ng) are installed and provide helpful feedback if they're missing.
+Craig's QA Kit automates this process by scanning for multicast addresses, displaying them in the terminal, and directly integrating them with NWTest. This automation not only saves time but also minimizes errors—especially when running hundreds of tests.
 
-Use Case Example
-Traditionally, setting up an NWTest multicast scenario involved:
+---
 
-Finding the correct multicast address.
-Copying or remembering that address.
-Manually constructing and executing the NWTest command.
-With Craig's QA Kit, these steps are automated. The kit scans for multicast addresses, displays them in your terminal, and automatically uses them with NWTest—all in one go. This not only saves time but also minimizes potential errors, especially when running large volumes of tests.
+## Key Features
 
-Known Issues & Contributions
-While Craig's QA Kit has been designed to improve efficiency, there are still areas under development and features that may not be fully polished. If you encounter any bugs or have suggestions for improvements, please report them or submit a pull request. Your feedback is greatly appreciated and helps make the kit even better.
+- **Automated Test Preparation**  
+  Quickly prepare and execute common test cases with minimal manual setup.
 
-Getting Started
-Install Dependencies:
-Ensure you have all the required tools installed. Refer to the documentation within the kit for detailed installation instructions.
+- **NWTest Multicast Automation**  
+  Automatically scan for multicast addresses and feed them into NWTest without needing to remember or manually type commands.
 
-Run the Kit:
-Execute the kit from your terminal. You'll be presented with a guided menu to choose from various tools and test setups.
+- **Alias Creation**  
+  Easily create an alias to run the kit from any directory.
 
-Customize Your Workflow:
-Whether you prefer simple, predefined profiles or need advanced customization, the kit offers options to suit your workflow.
+- **Stress Testing Tools**  
+  Run CPU, memory, and I/O stress tests with guided, user-friendly options.
 
-This revised README aims to clearly communicate the purpose, features, and benefits of Craig's QA Kit while guiding users on how to get started and contribute improvements. Feel free to adjust any section to better match your style or additional features.
+- **Dependency Checks**  
+  Built-in functions verify that required tools (such as ImageMagick, FFmpeg, NWTest, stress, and stress-ng) are installed, providing helpful feedback if any are missing.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+Ensure you have the following tools installed on your system:
+
+- **ImageMagick** (for `convert`)  
+- **FFmpeg** (for video processing)  
+- **NWTest** (for network tests)  
+- **stress** or **stress-ng** (for stress testing)  
+- *(Optional)* **psutil** (for dynamic monitoring; install via `pip install psutil`)  
+
+> **Note:**  
+> The kit is designed primarily for **Linux**. It may also work on **macOS** with minor adjustments. Windows support is limited unless you use a Unix-like shell (e.g., Git Bash or WSL).
+
+Contributing
+This kit is a work in progress. There may be bugs or features that need refinement. If you find any issues or have suggestions for improvements:
+
+Report Issues: Create a GitHub issue.
+Contribute: Fork the repository and submit a pull request.
+Your contributions and feedback are highly appreciated!
+
+License
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+You may not remove or alter the original author's name (Craig Douglas) from any copies, forks, or derivative works.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Enjoy using Craig's QA Kit and happy testing!
