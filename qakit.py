@@ -6,7 +6,7 @@ import sys
 import platform
 
 # Define the current version
-CURRENT_VERSION = "1.5"
+CURRENT_VERSION = "1.5.1"
 GITHUB_REPO_URL = "https://raw.githubusercontent.com/McEwann/QAkit/main/qakit.py?nocache=1"
 
 # ANSI color codes (conditionally enabled)
@@ -199,7 +199,6 @@ def download_file():
 def list_multicast_addresses():
     run_command("ip maddr show")
 
-
 def stress_test():
     """Perform an enhanced stress test with a guided interface.
     
@@ -302,11 +301,21 @@ def stress_test():
                 break
             print("Invalid choice. Please enter 1, 2, or 3.")
         if profile == "1":
-            cpu_workers, vm_workers, io_workers, duration, vm_bytes = 2, 1, 1, 30, "256M"
+            cpu_workers, vm_workers, io_workers, default_duration, vm_bytes = 2, 1, 1, 30, "256M"
         elif profile == "2":
-            cpu_workers, vm_workers, io_workers, duration, vm_bytes = 4, 2, 2, 60, "512M"
+            cpu_workers, vm_workers, io_workers, default_duration, vm_bytes = 4, 2, 2, 60, "512M"
         elif profile == "3":
-            cpu_workers, vm_workers, io_workers, duration, vm_bytes = 8, 4, 4, 120, "1G"
+            cpu_workers, vm_workers, io_workers, default_duration, vm_bytes = 8, 4, 4, 120, "1G"
+        # Allow the user to override the default duration.
+        override = input(f"Default test duration is {default_duration} seconds. Would you like to change it? (y/n): ").strip().lower()
+        if override == 'y':
+            try:
+                duration = int(input("Enter desired duration in seconds: ").strip())
+            except ValueError:
+                print("Invalid input. Using default duration.")
+                duration = default_duration
+        else:
+            duration = default_duration
 
     # Ask if the user wants to log resource usage.
     log_file = None
@@ -340,7 +349,7 @@ def stress_test():
                 except ValueError:
                     print("Invalid input. Please enter a valid number (e.g., 90).")
 
-    # Build the stress command.
+                       # Build the stress command.
     cmd_parts = []
     if stress_tool in ["stress", "stress-ng"]:
         if cpu_workers > 0:
@@ -351,13 +360,29 @@ def stress_test():
                 cmd_parts.append(f"--vm-bytes {vm_bytes}")
         if io_workers > 0:
             cmd_parts.append(f"--io {io_workers}")
-        cmd_parts.append(f"--timeout {duration}")
+        # For stress-ng, use a timeout with an "s" suffix.
+        if stress_tool == "stress-ng":
+            timeout_arg = f"--timeout {duration}s"
+        else:
+            timeout_arg = f"--timeout {duration}"
+        cmd_parts.append(timeout_arg)
         cmd = f"{stress_tool} " + " ".join(cmd_parts)
     else:
         print(f"{RED}Error: No stress tool selected.{RESET}")
         return
 
     print(f"\n{GREEN}Starting stress test with command:{RESET}\n{cmd}\n")
+    
+    # Force the process to run in /tmp:
+    # 1. Change the current working directory.
+    # 2. Update the environment variables TMPDIR and PWD to /tmp.
+    os.chdir("/tmp")
+    env = os.environ.copy()
+    env["TMPDIR"] = "/tmp"
+    env["PWD"] = "/tmp"
+    
+    process = subprocess.Popen(cmd, shell=True, env=env)
+
     
     # Launch the stress test.
     process = subprocess.Popen(cmd, shell=True)
@@ -390,9 +415,6 @@ def stress_test():
         final_mem = psutil.virtual_memory().percent
         print(f"Final CPU Usage: {final_cpu}%")
         print(f"Final Memory Usage: {final_mem}%")
-
-
-
 
 def adjust_for_linux_version():
     """
